@@ -67,7 +67,8 @@ bool HelloWorld::init()
 	this->addChild(_pLabelTTFScore, (int)ZOrder::Highest);
 
 	_pLabelBMFScore = Label::createWithTTF("Score: ", "fonts/arial.ttf", 50);
-	_pLabelBMFScore->setPosition(HALF_WIDTH_SCREEN, HEIGHT_SCREEN - 100);
+	_pLabelBMFScore->setColor(Color3B::RED);
+	_pLabelBMFScore->setPosition(HALF_WIDTH_SCREEN, HEIGHT_SCREEN - 50);
 	addChild(_pLabelBMFScore, (int)ZOrder::Highest);
 
 	createObstacle();	
