@@ -44,7 +44,6 @@ bool HelloWorld::init()
 	pBg->setPosition(POS_BACKGROUND);
 	this->addChild(pBg, (int)ZOrder::One);
 
-
 	_pNodeContaintHorizital = Node::create();	
 	this->addChild(_pNodeContaintHorizital, (int)ZOrder::Two);
 
@@ -107,12 +106,40 @@ void HelloWorld::update(float dt)
 	
 	if (_pBall->getPositionY() + _pNodeContaintHorizital->getPositionY() > DISTANCE_NEED_RANDOM)
 	{
-		_pNodeContaintHorizital->setPositionY(_pNodeContaintHorizital->getPositionY()- DISTANCE_NEED_RANDOM);
+		log("Ball Y= %f, Node Y= %f  ", _pBall->getPositionY() + _pNodeContaintHorizital->getPositionY() , _pNodeContaintHorizital->getPositionY());
+		moveCameraAndPauseGame( -DISTANCE_NEED_RANDOM );
+		//_pNodeContaintHorizital->setPositionY(_pNodeContaintHorizital->getPositionY()- DISTANCE_NEED_RANDOM);
 		//createObstacle();
+	}
+	if (_pBall->getPositionY() + _pNodeContaintHorizital->getPositionY() < - _pBall->getContentSize().height*SCALE_FACTOR)
+	{
+		moveCameraAndPauseGame(DISTANCE_NEED_RANDOM);
 	}
 
 	_pLabelBMFScore->setString(std::to_string(_nScore));
 	//_streak->setPositionY(_pBall->getPositionY() - HEIGHT_SPRITE(_pBall)*0.5f*SCALE_FACTOR);
+}
+
+void HelloWorld::moveCameraAndPauseGame(float fYBall)
+{
+	_isPlaying = false;
+	for ( auto pChild : _pNodeContaintHorizital->getChildren())
+	{
+		pChild->pause();
+	}
+	auto pCallResumeGame = CallFunc::create(CC_CALLBACK_0(HelloWorld::resumeGame, this));
+	auto pMoveUp	= MoveBy::create(0.75f, Vec2(0, fYBall));
+	auto pSequence = Sequence::create(pMoveUp, pCallResumeGame, nullptr);
+	_pNodeContaintHorizital->runAction(pSequence);
+}
+
+void HelloWorld::resumeGame()
+{
+	_isPlaying = true;
+	for (auto pChild : _pNodeContaintHorizital->getChildren())
+	{
+		pChild->resume();
+	}
 }
 
 void HelloWorld::gameOver()
@@ -240,7 +267,12 @@ void HelloWorld::createObstacle()
 }
 
 bool HelloWorld::onTouchBegan(Touch* pTouch, Event* pEvent)
-{		
+{	
+	if (!_isPlaying)
+	{
+		return false;
+	}
+
 	if ( _pBall->getActionByTag(TAG_JUMP_ACTION) )
 	{
 		_pBall->stopAllActions();
