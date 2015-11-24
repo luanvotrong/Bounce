@@ -20,7 +20,7 @@ Vec2 normalizeEdit( Vec2 pos )
 {
 	float len = sqrt(pos.x*pos.x + pos.y*pos.y);
 	
-	return ccp(pos.x / len, pos.y / len);
+	return Vec2(pos.x / len, pos.y / len);
 }
 
 // on "init" you need to initialize your instance
@@ -31,7 +31,6 @@ bool HelloWorld::init()
         return false;
     }
 		
-
 	this->setTouchEnabled(true);
 	
 	_isPlaying	= true;
@@ -101,8 +100,7 @@ void HelloWorld::update(float dt)
 		{
 			_nScore += 1;
 			createObstacle();
-		}
-		
+		}		
 	}
 	
 	if (_pBall->getPositionY() + _pNodeContaintHorizital->getPositionY() > DISTANCE_NEED_RANDOM)
@@ -114,7 +112,7 @@ void HelloWorld::update(float dt)
 	}
 	if (_pBall->getPositionY() + _pNodeContaintHorizital->getPositionY() < - _pBall->getContentSize().height*SCALE_FACTOR)
 	{
-		moveCameraAndPauseGame(DISTANCE_NEED_RANDOM);
+		moveCameraAndPauseGame(DISTANCE_NEED_RANDOM);		
 	}
 
 	_pLabelBMFScore->setString(std::to_string(_nScore));
@@ -148,7 +146,7 @@ void HelloWorld::gameOver()
 	setPause();
 	this->unscheduleUpdate();
 	auto pSpriteGameOver = Sprite::create("images/gameOver.png");
-	pSpriteGameOver->setPosition(ccp(HALF_WIDTH_SCREEN, HALF_HEIGHT_SCREEN));
+	pSpriteGameOver->setPosition(Vec2(HALF_WIDTH_SCREEN, HALF_HEIGHT_SCREEN));
 	addChild(pSpriteGameOver, (int)ZOrder::Highest);
 	this->setTouchEnabled(false);
 }
@@ -156,7 +154,7 @@ void HelloWorld::gameOver()
 
 Action* HelloWorld::moveAction(float fDeltaMove, float fDelayTime)
 {	
-	auto pMoveRight = MoveBy::create(fDelayTime, ccp(fDeltaMove, 0));
+	auto pMoveRight = MoveBy::create(fDelayTime, Vec2(fDeltaMove, 0));
 	auto pSequence = Sequence::create(pMoveRight, pMoveRight->reverse(), NULL);
 	
 	return RepeatForever::create(pSequence);
@@ -196,14 +194,14 @@ void HelloWorld::createObstacle()
 			if (i % 2 != 0)
 			{
 				fDistanceNeedMove = HALF_WIDTH_SCREEN - (pObstacleTemp->getPositionX() + WIDTH_SPRITE(pObstacleTemp)*0.5f);
-				auto pMoveRight = MoveBy::create(fTimeRandom, ccp(fDistanceNeedMove, 0));
+				auto pMoveRight = MoveBy::create(fTimeRandom, Vec2(fDistanceNeedMove, 0));
 				auto pSequence = Sequence::create(pMoveRight, pMoveRight->reverse(), NULL);
 				pObstacleTemp->runAction(RepeatForever::create(pSequence));
 			}
 			else
 			{
 				fDistanceNeedMove = (pObstacleTemp->getPositionX() - WIDTH_SPRITE(pObstacleTemp)*0.5f) - HALF_WIDTH_SCREEN;
-				auto pMoveLeft = MoveBy::create(fTimeRandom, ccp(-fDistanceNeedMove, 0));
+				auto pMoveLeft = MoveBy::create(fTimeRandom, Vec2(-fDistanceNeedMove, 0));
 				auto pSequence = Sequence::create(pMoveLeft, pMoveLeft->reverse(), NULL);
 				pObstacleTemp->runAction(RepeatForever::create(pSequence));
 			}
@@ -251,8 +249,8 @@ void HelloWorld::createObstacle()
 		{
 			pSpriteAtIndexTwo->setTag(TAG_FOR_GET_SCORE);
 			pSpriteAtIndexZero->setTag(TAG_FOR_RANDOM);
-			pSpriteAtIndexTwo->setPosition(ccp(fSpriteLeftX, pSpriteAtIndexZero->getPositionY() + 800));
-			pSpriteAtIndexThree->setPosition(ccp(fSpriteRightX,pSpriteAtIndexTwo->getPositionY()));
+			pSpriteAtIndexTwo->setPosition(Vec2(fSpriteLeftX, pSpriteAtIndexZero->getPositionY() + 800));
+			pSpriteAtIndexThree->setPosition(Vec2(fSpriteRightX,pSpriteAtIndexTwo->getPositionY()));
 			
 			fDisToRight			= HALF_WIDTH_SCREEN - (pSpriteAtIndexTwo->getPositionX() + WIDTH_SPRITE(pSpriteAtIndexZero)*0.5f);
 			fDisToLeft			= (pSpriteAtIndexThree->getPositionX() - WIDTH_SPRITE(pSpriteAtIndexThree)*0.5f) - HALF_WIDTH_SCREEN;
@@ -279,9 +277,9 @@ bool HelloWorld::onTouchBegan(Touch* pTouch, Event* pEvent)
 		_pBall->stopAllActions();
 	}
 	
-	auto pJumpUp	= JumpBy::create(1.0f, ccp(0, 300), 300, 1);
+	auto pJumpUp	= JumpBy::create(1.0f, Vec2(0, 300), 300, 1);
 	auto pEasyOut	= EaseOut::create(pJumpUp, 1.0f);
-	auto pFallDown	= JumpBy::create(1.0f, ccp(0, - ( _pBall->getPositionY() + WIDTH_SPRITE(_pBall)*0.5f) ), -150, 1);
+	auto pFallDown	= JumpBy::create(1.0f, Vec2(0, - ( _pBall->getPositionY() + WIDTH_SPRITE(_pBall)*0.5f) ), -150, 1);
 	auto pEasyIn	= EaseIn::create(pFallDown, 0.75f);
 	auto pSequence	= Sequence::create(pEasyOut, pEasyIn, NULL);
 	pSequence->setTag(TAG_JUMP_ACTION);
