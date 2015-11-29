@@ -52,13 +52,14 @@ bool HelloWorld::init()
 	_pBall = Sprite::create(IMG_BALL);
 	_pBall->setPosition(POS_BALL);
 	_pNodeContaintHorizital->addChild(_pBall, (int)ZOrder::Two);
-
+	
 	//_streak = CCMotionStreak::create(0.4, 1, 15, ccc3(255, 255, 255), "images/streak.png");
-	//_streak->setPosition(ccp(_pBall->getPositionX(),
-	//							_pBall->getPositionY() - HEIGHT_SPRITE(_pBall)*0.5f) );
-	//_streak->setBlendFunc(ADDITIVE);
+	_streak = MotionStreak::create(MOTION_STREAK_CONFIG);
+	_streak->setPosition(ccp(_pBall->getPositionX(),
+								_pBall->getPositionY() /*- HEIGHT_SPRITE(_pBall)*0.5f*/) );
+	_streak->setBlendFunc(ADDITIVE);
 	//_pBall->setTrail(pStreak);
-	//addChild(_streak, (int)ZOrder::Two);
+	_pNodeContaintHorizital->addChild(_streak, (int)ZOrder::One);
 
 	_pLabelTTFScore = Label::createWithTTF("Score: ", "fonts/arial.ttf", 50);
 	_pLabelTTFScore->setPosition(ccp(_pLabelTTFScore->getContentSize().width*0.5f, HEIGHT_SCREEN - _pLabelTTFScore->getContentSize().height*0.5f));
@@ -116,7 +117,8 @@ void HelloWorld::update(float dt)
 	}
 
 	_pLabelBMFScore->setString(std::to_string(_nScore));
-	//_streak->setPositionY(_pBall->getPositionY() - HEIGHT_SPRITE(_pBall)*0.5f*SCALE_FACTOR);
+	_streak->setPositionX(_pBall->getPositionX()/* - WIDTH_SPRITE(_pBall)*0.5f*SCALE_FACTOR*/);
+	_streak->setPositionY(_pBall->getPositionY()/* - HEIGHT_SPRITE(_pBall)*0.5f*SCALE_FACTOR*/);
 }
 
 void HelloWorld::moveCameraAndPauseGame(float fYBall)
