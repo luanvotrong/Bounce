@@ -37,6 +37,8 @@ public:
 	void gameOver();
 	void setPause();
 	void setResume();
+	void moveCameraAndPauseGame(float fYBall);
+	void resumeGame();
 	Action* moveAction( float fDeltaMove, float fDelayTime );
 	bool getPlaying();
 
