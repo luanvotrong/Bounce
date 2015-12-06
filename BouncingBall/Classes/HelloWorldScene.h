@@ -21,7 +21,7 @@ private:
 	//Ball* _pBall;
 	Sprite* _pBall;
 
-	CCMotionStreak* _streak;
+	MotionStreak* _streak;
 	Label* _pLabelTTFScore;
 	Label* _pLabelBMFScore;
 
