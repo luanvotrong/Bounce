@@ -17,7 +17,7 @@ private:
 
 	float _fDistanceNeedRandom;
 	float _fLastHeightBall;
-
+	float _fDistCamFocusBall;
 	//Ball* _pBall;
 	Sprite* _pBall;
 
@@ -51,4 +51,4 @@ public:
     CREATE_FUNC(HelloWorld);
 };
 
-#endif
+#endif 

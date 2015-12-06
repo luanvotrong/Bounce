@@ -58,7 +58,6 @@ bool HelloWorld::init()
 	_streak->setPosition(ccp(_pBall->getPositionX(),
 								_pBall->getPositionY() /*- HEIGHT_SPRITE(_pBall)*0.5f*/) );
 	_streak->setBlendFunc(ADDITIVE);
-	//_pBall->setTrail(pStreak);
 	_pNodeContaintHorizital->addChild(_streak, (int)ZOrder::One);
 
 	_pLabelTTFScore = Label::createWithTTF("Score: ", "fonts/arial.ttf", 50);
@@ -106,14 +105,14 @@ void HelloWorld::update(float dt)
 	
 	if (_pBall->getPositionY() + _pNodeContaintHorizital->getPositionY() > DISTANCE_NEED_RANDOM)
 	{
-		log("Ball Y= %f, Node Y= %f  ", _pBall->getPositionY() + _pNodeContaintHorizital->getPositionY() , _pNodeContaintHorizital->getPositionY());
-		moveCameraAndPauseGame( -DISTANCE_NEED_RANDOM );
+		log("Ball Y= %f, Node Y= %f  ", _pBall->getPositionY() + _pNodeContaintHorizital->getPositionY() , _pNodeContaintHorizital->getPositionY());		
+		moveCameraAndPauseGame(-DISTANCE_NEED_RANDOM);			
 		//_pNodeContaintHorizital->setPositionY(_pNodeContaintHorizital->getPositionY()- DISTANCE_NEED_RANDOM);
 		//createObstacle();
 	}
 	if (_pBall->getPositionY() + _pNodeContaintHorizital->getPositionY() < - _pBall->getContentSize().height*SCALE_FACTOR)
 	{
-		moveCameraAndPauseGame(DISTANCE_NEED_RANDOM);		
+		moveCameraAndPauseGame(DISTANCE_NEED_RANDOM*0.5f);
 	}
 
 	_pLabelBMFScore->setString(std::to_string(_nScore));
@@ -168,7 +167,7 @@ void HelloWorld::createObstacle()
 	float fSpriteX = 0.0f;
 	float fSpriteY = 0.0f;
 	float fDistanceNeedMove = 0.0f;
-	float fTimeRandom = 0.5f + CCRANDOM_0_1();
+	float fTimeRandom = 0.5f + rand_0_1();
 
 	if ( !isCreate )
 	{
@@ -233,8 +232,8 @@ void HelloWorld::createObstacle()
 		{
 			pSpriteAtIndexZero->setTag(TAG_FOR_GET_SCORE);
 			pSpriteAtIndexTwo->setTag(TAG_FOR_RANDOM);				
-			pSpriteAtIndexZero->setPosition(ccp(fSpriteLeftX, pSpriteAtIndexTwo->getPositionY() + 800));
-			pSpriteAtIndexOne->setPosition(ccp(fSpriteRightX, pSpriteAtIndexZero->getPositionY()));
+			pSpriteAtIndexZero->setPosition(Vec2(fSpriteLeftX, pSpriteAtIndexTwo->getPositionY() + 800));
+			pSpriteAtIndexOne->setPosition(Vec2(fSpriteRightX, pSpriteAtIndexZero->getPositionY()));
 
 			
 			fDisToRight			= HALF_WIDTH_SCREEN - (pSpriteAtIndexZero->getPositionX() + WIDTH_SPRITE(pSpriteAtIndexZero)*0.5f);
@@ -291,8 +290,7 @@ bool HelloWorld::onTouchBegan(Touch* pTouch, Event* pEvent)
 }
 
 void HelloWorld::onTouchMoved(Touch* pTouch, CCEvent* pEvent)
-{
-
+{	
 }
 
 void HelloWorld::onTouchCancelled(Touch* pTouch, CCEvent* pEvent)
