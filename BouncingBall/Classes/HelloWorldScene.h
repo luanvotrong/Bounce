@@ -5,7 +5,9 @@
 #include "GameDefine.h"
 
 USING_NS_CC;
-#define shit 2
+
+#define shit 3
+
 class HelloWorld : public cocos2d::Layer
 {
 private:
