@@ -6,7 +6,7 @@
 
 USING_NS_CC;
 
-#define shit 6
+#define shit 7
 
 class HelloWorld : public cocos2d::Layer
 {
