@@ -46,6 +46,8 @@ bool HelloWorld::init()
 	_pNodeContaintHorizital = Node::create();	
 	this->addChild(_pNodeContaintHorizital, (int)ZOrder::Two);
 
+	/*_pBall = Ball::createBall( POS_BALL );
+	_pNodeContaintHorizital->addChild(_pBall, (int)ZOrder::Two);*/
 	_pBall = nullptr;
 	_pBall = Sprite::create(IMG_BALL);
 	_pBall->setPosition(POS_BALL);
@@ -57,7 +59,7 @@ bool HelloWorld::init()
 								_pBall->getPositionY() /*- HEIGHT_SPRITE(_pBall)*0.5f*/) );
 	_streak->setBlendFunc(ADDITIVE);
 	//_pBall->setTrail(pStreak);
-	_pNodeContaintHorizital->addChild(_streak, (int)ZOrder::One);
+	addChild(_streak, (int)ZOrder::One);
 
 	_pLabelTTFScore = Label::createWithTTF("Score: ", "fonts/arial.ttf", 50);
 	_pLabelTTFScore->setPosition(ccp(_pLabelTTFScore->getContentSize().width*0.5f, HEIGHT_SCREEN - _pLabelTTFScore->getContentSize().height*0.5f));
@@ -103,8 +105,11 @@ void HelloWorld::update(float dt)
 	}
 	
 	if (_pBall->getPositionY() + _pNodeContaintHorizital->getPositionY() > DISTANCE_NEED_RANDOM)
-	{		
+	{
+		log("Ball Y= %f, Node Y= %f  ", _pBall->getPositionY() + _pNodeContaintHorizital->getPositionY() , _pNodeContaintHorizital->getPositionY());
 		moveCameraAndPauseGame( -DISTANCE_NEED_RANDOM );
+		//_pNodeContaintHorizital->setPositionY(_pNodeContaintHorizital->getPositionY()- DISTANCE_NEED_RANDOM);
+		//createObstacle();
 	}
 	if (_pBall->getPositionY() + _pNodeContaintHorizital->getPositionY() < - _pBall->getContentSize().height*SCALE_FACTOR)
 	{
