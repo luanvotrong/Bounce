@@ -2,6 +2,23 @@
 
 USING_NS_CC;
 
+#define POS_BALL			Vec2( 480, 100)
+#define MOVEUP_BOUNDARY		430
+#define DURATION_UP			0.6f
+#define DURATION_DOWN		0.6f
+#define OBSTACLE_IMG		"images/horizital.png"
+#define OBSTACLE_START_Y	600.0f
+#define OBSTACLE_RAND_MIN	250.0f
+#define OBSTACLE_RAND_MAX	450.0f
+#define OBSTACLE_TIME_MIN	1.5f
+#define OBSTACLE_TIME_MAX	3.0f
+
+float Random(float min, float max)
+{
+	float value = CCRANDOM_0_1();
+	return (value * (max - min)) + min;
+}
+
 Scene* HelloWorld::createScene()
 {
     // 'scene' is an autorelease object
@@ -49,13 +66,13 @@ bool HelloWorld::init()
 	_pBall = nullptr;
 	_pBall = Sprite::create(IMG_BALL);
 	_pBall->setPosition(POS_BALL);
-	_pNodeContaintHorizital->addChild(_pBall, (int)ZOrder::Two);
+	addChild(_pBall, (int)ZOrder::Two);
 	
-	_streak = CCMotionStreak::create(MOTION_STREAK_CONFIG);
+	_streak = MotionStreak::create(MOTION_STREAK_CONFIG);
 	_streak->setPosition(ccp(_pBall->getPositionX(),
 								_pBall->getPositionY() ) );
 	_streak->setBlendFunc(ADDITIVE);
-	_pNodeContaintHorizital->addChild(_streak, (int)ZOrder::One);
+	addChild(_streak, (int)ZOrder::One);
 
 	_pLabelTTFScore = Label::createWithTTF("Score: ", "fonts/arial.ttf", 50);
 	_pLabelTTFScore->setPosition(ccp(_pLabelTTFScore->getContentSize().width*0.5f, HEIGHT_SCREEN - _pLabelTTFScore->getContentSize().height*0.5f));
@@ -67,7 +84,7 @@ bool HelloWorld::init()
 	_pLabelBMFScore->setPosition(HALF_WIDTH_SCREEN, HEIGHT_SCREEN - 50);
 	addChild(_pLabelBMFScore, (int)ZOrder::Highest);
 
-	createObstacle();	
+	createObstacles(true);	
 
 	auto touchlistener = EventListenerTouchOneByOne::create();
 	touchlistener->onTouchBegan = CC_CALLBACK_2(HelloWorld::onTouchBegan, this);
@@ -87,26 +104,26 @@ void HelloWorld::update(float dt)
 	
 	for (auto pHonizontal : _vtObstacle)
 	{
-		if (pHonizontal->boundingBox().intersectsRect(_pBall->boundingBox()))
+		Rect rect1 = _pBall->boundingBox();
+		Rect rect2 = pHonizontal->boundingBox();
+		rect2.origin += pHonizontal->convertToWorldSpace(pHonizontal->getPosition());
+		if (rect1.intersectsRect(rect2))
 		{
 			_isPlaying = false;
 			gameOver();
 			return;
 		}
-		if (pHonizontal->getTag() == TAG_FOR_GET_SCORE && _pBall->getPositionY() - _pBall->getContentSize().width*0.5f > pHonizontal->getPositionY())
-		{
-			_nScore += 1;
-			createObstacle();
-		}		
 	}
 	
-	if (_pBall->getPositionY() + _pNodeContaintHorizital->getPositionY() > DISTANCE_NEED_RANDOM)
-	{	
-		moveCameraAndPauseGame( -DISTANCE_NEED_RANDOM );
-	}
-	if (_pBall->getPositionY() + _pNodeContaintHorizital->getPositionY() < - _pBall->getContentSize().height*SCALE_FACTOR)
+	if (_vtObstacle[_vtObstacle.size()-1]->getPositionY() < HEIGHT_SCREEN)
 	{
-		moveCameraAndPauseGame(DISTANCE_NEED_RANDOM);		
+		createObstacles(false);
+	}
+
+	if (_pBall->getPositionY() > MOVEUP_BOUNDARY)
+	{
+		auto action = EaseIn::create(MoveBy::create(0.5f, Vec2(0, -20)), 0.5f);
+		_pNodeContaintHorizital->runAction(action);
 	}
 
 	_pLabelBMFScore->setString(std::to_string(_nScore));
@@ -155,109 +172,58 @@ Action* HelloWorld::moveAction(float fDeltaMove, float fDelayTime)
 	return RepeatForever::create(pSequence);
 }
 
-void HelloWorld::createObstacle()
+void HelloWorld::createObstacle(float y)
 {
-	static bool isCreate = false;
-	float fSpriteX = 0.0f;
-	float fSpriteY = 0.0f;
-	float fDistanceNeedMove = 0.0f;
-	float fTimeRandom = 0.5f + CCRANDOM_0_1();
+	//Create
+	auto leftTemp = Sprite::create(OBSTACLE_IMG);
+	auto rightTemp = Sprite::create(OBSTACLE_IMG);
+	float rightX = WIDTH_SCREEN + WIDTH_SPRITE(rightTemp) * 1 / 3 - rand() % 50; // obstacle right				
+	float leftX = -WIDTH_SPRITE(leftTemp) * 1 / 3 + rand() % 50; // obstacle left
 
-	if ( !isCreate )
+	//Set position, add to screen
+	leftTemp->setPosition(ccp(leftX, y));
+	rightTemp->setPosition(ccp(rightX, y));
+	_pNodeContaintHorizital->addChild(leftTemp, (int)ZOrder::Two);
+	_pNodeContaintHorizital->addChild(rightTemp, (int)ZOrder::Two);
+	_vtObstacle.push_back(leftTemp);
+	_vtObstacle.push_back(rightTemp);
+
+	//Action
+	float fDistanceNeedMove = HALF_WIDTH_SCREEN - (leftTemp->getPositionX() + WIDTH_SPRITE(leftTemp)*0.5f);
+	float time = Random(OBSTACLE_TIME_MIN, OBSTACLE_TIME_MAX);
+	auto pMoveRight = MoveBy::create(time, Vec2(fDistanceNeedMove, 0));
+	auto pSequence = Sequence::create(pMoveRight, pMoveRight->reverse(), NULL);
+	leftTemp->runAction(RepeatForever::create(pSequence));
+
+	fDistanceNeedMove = (rightTemp->getPositionX() - WIDTH_SPRITE(rightTemp)*0.5f) - HALF_WIDTH_SCREEN;
+	auto pMoveLeft = MoveBy::create(time, Vec2(-fDistanceNeedMove, 0));
+	pSequence = Sequence::create(pMoveLeft, pMoveLeft->reverse(), NULL);
+	rightTemp->runAction(RepeatForever::create(pSequence));
+}
+
+void HelloWorld::createObstacles(bool isInit)
+{
+	if (isInit)
 	{
-		for (int i = 0; i < 4; i++)
+		float y = OBSTACLE_START_Y;
+		while (y <= HEIGHT_SCREEN)
 		{
-			auto pObstacleTemp = Sprite::create("images/horizital.png");			
-			fSpriteY = 800 + 800 * (i > 1 ? 0 : 1);
-			if (i % 2 == 0)
-			{
-				if (i == 2)
-				{
-					fTimeRandom = 0.5f + CCRANDOM_0_1();
-				}
-				fSpriteX = WIDTH_SCREEN + WIDTH_SPRITE(pObstacleTemp) * 1 / 3 - rand() % 50; // obstacle right				
-				
-			}
-			else
-			{
-				fSpriteX = -WIDTH_SPRITE(pObstacleTemp) * 1 / 3 + rand() % 50; // obstacle left
-			}			
-			pObstacleTemp->setPosition(ccp(fSpriteX, fSpriteY));
-			_pNodeContaintHorizital->addChild(pObstacleTemp, (int)ZOrder::Two);
-			_vtObstacle.push_back(pObstacleTemp);
-
-			if (i % 2 != 0)
-			{
-				fDistanceNeedMove = HALF_WIDTH_SCREEN - (pObstacleTemp->getPositionX() + WIDTH_SPRITE(pObstacleTemp)*0.5f);
-				auto pMoveRight = MoveBy::create(fTimeRandom, Vec2(fDistanceNeedMove, 0));
-				auto pSequence = Sequence::create(pMoveRight, pMoveRight->reverse(), NULL);
-				pObstacleTemp->runAction(RepeatForever::create(pSequence));
-			}
-			else
-			{
-				fDistanceNeedMove = (pObstacleTemp->getPositionX() - WIDTH_SPRITE(pObstacleTemp)*0.5f) - HALF_WIDTH_SCREEN;
-				auto pMoveLeft = MoveBy::create(fTimeRandom, Vec2(-fDistanceNeedMove, 0));
-				auto pSequence = Sequence::create(pMoveLeft, pMoveLeft->reverse(), NULL);
-				pObstacleTemp->runAction(RepeatForever::create(pSequence));
-			}
-
+			//Create obstacle.
+			createObstacle(y);
+			//Sprite* obstacle = Sprite::create(OBSTACLE_IMG);
+			//_vtObstacle.push_back(obstacle);
+			y += (rand() % (int)(OBSTACLE_RAND_MAX-OBSTACLE_RAND_MIN)) + OBSTACLE_RAND_MIN;
 		}
-		isCreate = true;
-		_vtObstacle.at(0)->setTag(TAG_FOR_GET_SCORE);
-		_vtObstacle.at(2)->setTag(TAG_FOR_RANDOM);
 	}
 	else
 	{
-		auto pSpriteAtIndexZero		= _vtObstacle.at(0);
-		auto pSpriteAtIndexOne		= _vtObstacle.at(1);
-		auto pSpriteAtIndexTwo		= _vtObstacle.at(2);
-		auto pSpriteAtIndexThree	= _vtObstacle.at(3);
-
-		float fSpriteLeftX			= -WIDTH_SPRITE(pSpriteAtIndexZero) * 1 / 3 + rand() % 50;
-		float fSpriteRightX			= WIDTH_SCREEN + WIDTH_SPRITE(pSpriteAtIndexZero) * 1 / 3 - rand() % 50;
-
-		float fTimeRandom			= 0.8f + CCRANDOM_0_1();
-		float fDisToRight			= 0.0f;
-		float fDisToLeft			= 0.0f; 
-		Action* pActionMoveRight	= nullptr;
-		Action* pActionMoveLeft	= nullptr;
-
-		if (pSpriteAtIndexZero->getTag() == TAG_FOR_RANDOM)
-		{
-			pSpriteAtIndexZero->setTag(TAG_FOR_GET_SCORE);
-			pSpriteAtIndexTwo->setTag(TAG_FOR_RANDOM);				
-			pSpriteAtIndexZero->setPosition(ccp(fSpriteLeftX, pSpriteAtIndexTwo->getPositionY() + 800));
-			pSpriteAtIndexOne->setPosition(ccp(fSpriteRightX, pSpriteAtIndexZero->getPositionY()));
-
-			
-			fDisToRight			= HALF_WIDTH_SCREEN - (pSpriteAtIndexZero->getPositionX() + WIDTH_SPRITE(pSpriteAtIndexZero)*0.5f);
-			fDisToLeft			= (pSpriteAtIndexOne->getPositionX() - WIDTH_SPRITE(pSpriteAtIndexOne)*0.5f) - HALF_WIDTH_SCREEN;
-			pActionMoveRight	= moveAction(fDisToRight, fTimeRandom);
-			pActionMoveLeft		= moveAction(-fDisToLeft, fTimeRandom);
-
-			pSpriteAtIndexZero->stopAllActions();
-			pSpriteAtIndexOne->stopAllActions();
-			pSpriteAtIndexZero->runAction(pActionMoveRight);
-			pSpriteAtIndexOne->runAction(pActionMoveLeft);
-		}
-		else
-		{
-			pSpriteAtIndexTwo->setTag(TAG_FOR_GET_SCORE);
-			pSpriteAtIndexZero->setTag(TAG_FOR_RANDOM);
-			pSpriteAtIndexTwo->setPosition(Vec2(fSpriteLeftX, pSpriteAtIndexZero->getPositionY() + 800));
-			pSpriteAtIndexThree->setPosition(Vec2(fSpriteRightX,pSpriteAtIndexTwo->getPositionY()));
-			
-			fDisToRight			= HALF_WIDTH_SCREEN - (pSpriteAtIndexTwo->getPositionX() + WIDTH_SPRITE(pSpriteAtIndexZero)*0.5f);
-			fDisToLeft			= (pSpriteAtIndexThree->getPositionX() - WIDTH_SPRITE(pSpriteAtIndexThree)*0.5f) - HALF_WIDTH_SCREEN;
-			pActionMoveRight	= moveAction(fDisToRight, fTimeRandom);
-			pActionMoveLeft		= moveAction(-fDisToLeft, fTimeRandom);
-
-			pSpriteAtIndexTwo->stopAllActions();
-			pSpriteAtIndexThree->stopAllActions();
-			pSpriteAtIndexTwo->runAction(pActionMoveRight);
-			pSpriteAtIndexThree->runAction(pActionMoveLeft);
-		}
-	}	
+		float y = _vtObstacle[_vtObstacle.size() - 1]->getPositionY();
+		y += (rand() % (int)(OBSTACLE_RAND_MAX - OBSTACLE_RAND_MIN)) + OBSTACLE_RAND_MIN;
+		//Create obstacle.
+		createObstacle(y);
+		//Sprite* obstacle = Sprite::create(OBSTACLE_IMG);
+		//_vtObstacle.push_back(obstacle);
+	}
 }
 
 bool HelloWorld::onTouchBegan(Touch* pTouch, Event* pEvent)
@@ -267,33 +233,35 @@ bool HelloWorld::onTouchBegan(Touch* pTouch, Event* pEvent)
 		return false;
 	}
 
-	if ( _pBall->getActionByTag(TAG_JUMP_ACTION) )
+	if (_pBall->getActionByTag(TAG_JUMP_ACTION) )
 	{
 		_pBall->stopAllActions();
 	}
 	
-	auto pJumpUp	= JumpBy::create(1.0f, Vec2(0, 300), 300, 1);
-	auto pEasyOut	= EaseOut::create(pJumpUp, 1.0f);
-	auto pFallDown	= JumpBy::create(1.0f, Vec2(0, - ( _pBall->getPositionY() + WIDTH_SPRITE(_pBall)*0.5f) ), -150, 1);
-	auto pEasyIn	= EaseIn::create(pFallDown, 0.75f);
-	auto pSequence	= Sequence::create(pEasyOut, pEasyIn, NULL);
+	auto pJumpUp	= JumpTo::create(DURATION_UP, POS_BALL, 450, 1);
+	auto pEasyOut	= EaseIn::create(pJumpUp, DURATION_UP);
+	//auto pFallDown	= JumpBy::create(1.0f, Vec2(0, ( _pBall->getPositionY() + WIDTH_SPRITE(_pBall)*0.5f) ), 150, 1);
+	//auto pFallDown = MoveTo::create(DURATION_DOWN, POS_BALL);
+	//auto pEasyIn	= EaseOut::create(pFallDown, DURATION_DOWN);
+	//auto pSequence	= Sequence::create(pEasyOut, pEasyIn, NULL
+	auto pSequence = Sequence::create(pEasyOut, NULL);
 	pSequence->setTag(TAG_JUMP_ACTION);
 	
 	_pBall->runAction(pSequence);
 	return true;
 }
 
-void HelloWorld::onTouchMoved(Touch* pTouch, CCEvent* pEvent)
+void HelloWorld::onTouchMoved(Touch* pTouch, Event* pEvent)
 {
 
 }
 
-void HelloWorld::onTouchCancelled(Touch* pTouch, CCEvent* pEvent)
+void HelloWorld::onTouchCancelled(Touch* pTouch, Event* pEvent)
 {
 	onTouchEnded(pTouch, pEvent);
 }
 
-void HelloWorld::onTouchEnded(Touch* pTouch, CCEvent* pEvent)
+void HelloWorld::onTouchEnded(Touch* pTouch, Event* pEvent)
 {
 
 }

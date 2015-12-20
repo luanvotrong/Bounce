@@ -10,7 +10,7 @@
 #define IMG_BALL								"images/ball.png"
 #define IMG_BACKGROUND							"images/bgIngame_black.png"
 
-#define POS_BALL								ccp(HALF_WIDTH_SCREEN, 64)
+
 #define POS_BACKGROUND							ccp(HALF_WIDTH_SCREEN, HALF_HEIGHT_SCREEN)
 
 #define WIDTH_SPRITE(_x)						_x->getContentSize().width
