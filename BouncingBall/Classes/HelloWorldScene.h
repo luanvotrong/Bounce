@@ -35,7 +35,8 @@ public:
     virtual bool init();  
     static cocos2d::Scene* createScene();
     
-	void createObstacle();
+	void createObstacle(float y);
+	void createObstacles(bool isInit);
 	void gameOver();
 	void setPause();
 	void setResume();
