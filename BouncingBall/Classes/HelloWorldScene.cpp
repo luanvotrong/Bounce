@@ -1,17 +1,21 @@
 #include "HelloWorldScene.h"
+#include "json/rapidjson.h"
+#include "json/document.h"
+#include "json/filestream.h"
 
 USING_NS_CC;
-
+#define HAS_MEMBER(var,data) data.HasMember(#var)
+#define GET_VALUE_FROM_JSON(var, data, typedata)	if(HAS_MEMBER(var,data))	var = (typedata)data[#var].GetDouble()
 #define POS_BALL			Vec2( 480, 100)
-#define MOVEUP_BOUNDARY		430
-#define DURATION_UP			0.6f
-#define DURATION_DOWN		0.6f
+//#define MOVEUP_BOUNDARY		430
+//#define DURATION_UP			0.6f
+//#define DURATION_DOWN		0.6f
 #define OBSTACLE_IMG		"images/horizital.png"
-#define OBSTACLE_START_Y	600.0f
-#define OBSTACLE_RAND_MIN	250.0f
-#define OBSTACLE_RAND_MAX	450.0f
-#define OBSTACLE_TIME_MIN	1.5f
-#define OBSTACLE_TIME_MAX	3.0f
+//#define OBSTACLE_START_Y	600.0f
+//#define OBSTACLE_RAND_MIN	250.0f
+//#define OBSTACLE_RAND_MAX	450.0f
+//#define OBSTACLE_TIME_MIN	1.5f
+//#define OBSTACLE_TIME_MAX	3.0f
 
 float Random(float min, float max)
 {
@@ -48,6 +52,7 @@ bool HelloWorld::init()
         return false;
     }
 		
+	LoadDefine("Blance.json");
 	this->setTouchEnabled(true);
 	
 	_isPlaying	= true;
@@ -290,4 +295,26 @@ void HelloWorld::setResume()
 bool HelloWorld::getPlaying()
 {
 	return _isPlaying;
+}
+
+void HelloWorld::LoadDefine(char * jsonName)
+{
+	std::ifstream myJson(CCFileUtils::sharedFileUtils()->fullPathForFilename(jsonName));
+
+	std::string contents((std::istreambuf_iterator<char>(myJson)),std::istreambuf_iterator<char>());
+
+	rapidjson::Document balanceJson;
+	balanceJson.Parse<0>(contents.c_str());
+
+	if (balanceJson.IsNull())
+		return;
+
+	GET_VALUE_FROM_JSON(MOVEUP_BOUNDARY,		balanceJson, int);
+	GET_VALUE_FROM_JSON(DURATION_UP,			balanceJson, float);
+	GET_VALUE_FROM_JSON(DURATION_DOWN,			balanceJson, float);
+	GET_VALUE_FROM_JSON(OBSTACLE_START_Y,		balanceJson, float);
+	GET_VALUE_FROM_JSON(OBSTACLE_RAND_MIN,		balanceJson, float);
+	GET_VALUE_FROM_JSON(OBSTACLE_RAND_MAX,		balanceJson, float);
+	GET_VALUE_FROM_JSON(OBSTACLE_TIME_MIN,		balanceJson, float);
+	GET_VALUE_FROM_JSON(OBSTACLE_TIME_MAX,		balanceJson, float);
 }

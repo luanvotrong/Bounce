@@ -1,0 +1,9 @@
+Load variable from json:
+	1. Declare variable
+	2. Set value for variable in ".json" file
+	2. Get value for variable in LoadDefine function
+
+	ex:
+	1. declare: [int bitchLuan];
+	2. add line: ["bitchLuan": 696969] in .json file
+	3. add line [GET_VALUE_FROM_JSON(bitchLuan, balanceJson, int);] in LoadDefine function

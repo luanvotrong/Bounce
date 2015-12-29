@@ -31,6 +31,17 @@ private:
 
 	std::vector< Sprite* > _vtObstacle;
 
+	//Place to declare variables loaded from Blance.json
+	//Read Note.txt to use
+	int MOVEUP_BOUNDARY;
+	float DURATION_UP;
+	float DURATION_DOWN;
+	float OBSTACLE_START_Y;
+	float OBSTACLE_RAND_MIN;
+	float OBSTACLE_RAND_MAX;
+	float OBSTACLE_TIME_MIN;
+	float OBSTACLE_TIME_MAX;
+
 public:
     virtual bool init();  
     static cocos2d::Scene* createScene();
@@ -44,6 +55,7 @@ public:
 	void resumeGame();
 	Action* moveAction( float fDeltaMove, float fDelayTime );
 	bool getPlaying();
+	void LoadDefine(char * jsonName);
 
 	virtual bool onTouchBegan(Touch *pTouch, CCEvent *pEvent);
 	virtual void onTouchMoved(Touch* pTouch, CCEvent* pEvent);
