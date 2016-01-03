@@ -1,0 +1,10 @@
+{
+      "MOVEUP_BOUNDARY": 430,
+      "DURATION_UP": 0.6,
+      "DURATION_DOWN": 0.6,
+      "OBSTACLE_START_Y": 600.0,
+      "OBSTACLE_RAND_MIN": 250.0,
+      "OBSTACLE_RAND_MAX": 450.0,
+      "OBSTACLE_TIME_MIN": 1.5,
+      "OBSTACLE_TIME_MAX": 3.0
+}
